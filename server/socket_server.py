@@ -1,4 +1,5 @@
 from Application import Application
+from Persistance import PersistanceFile, PersistanceDB
 import socketserver
 import jsonpickle
 
@@ -15,7 +16,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
         method, params = self.data.decode('utf-8').split('//')
-        application = Application()
+        application = Application(PersistanceFile())
         actions = {
             "display_books": application.display_books,
             "buy_book": application.buy_book,
@@ -31,7 +32,7 @@ class MyTCPHandler(socketserver.BaseRequestHandler):
         self.request.sendall( jsonpickle.encode(response).encode('utf-8') )
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 9999
+    HOST, PORT = "localhost", 9998
 
     # Create the server, binding to localhost on port 9999
     with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:

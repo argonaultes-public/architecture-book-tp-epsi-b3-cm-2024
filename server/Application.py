@@ -1,40 +1,39 @@
 from model.BookShop import BookShop
 from model.Book import Book
 from model.Base import Base
+from Persistance import Persistance
 import os
 import jsonpickle
 from sqlalchemy import create_engine
 
 class Application:
 
-    __json_file = "application-bib.json"
 
-    def __init__(self):
+
+    def __init__(self, persistance : Persistance):
+        self.__persistance = persistance
         self.reload()
-        self.__engine = create_engine('sqlite+pysqlite:///application.db', echo=True)
-        Base.metadata.create_all(self.__engine)
+        # self.__engine = create_engine('sqlite+pysqlite:///application.db', echo=True)
+        # Base.metadata.create_all(self.__engine)
 
-    def add_book_in_bookshop(self, book):
-        self.__bookshop.add_book(jsonpickle.decode(book))
-        self.save_in_json()
+    def add_book_in_bookshop(self, bookdto):
+        dto = jsonpickle.decode(bookdto)
+        self.__bookshop.books.append(Book.from_dto(bookdto=dto))
+        self.save()
         return ('Livre bien ajouté')
 
-    def save_in_json(self):
-        with open(self.__json_file, "w") as f:
-            f.write(jsonpickle.encode(self))
+    def save(self):
+        self.__persistance.save(self.__bookshop, self.__user)
+
 
     def reload(self):
-        if not os.path.exists(self.__json_file):
-            print(f'Fichier {self.__json_file} introuvable.')
-            return False
-        with open(self.__json_file, "r") as f:
-            application = jsonpickle.decode(f.read(), classes=[Book, BookShop])
-            self.__bookshop = application._Application__bookshop
-            self.__user = application._Application__user
-        return True
+        self.__bookshop, self.__user = self.__persistance.reload()
+
 
     def display_books(self, *args):
-        return self.__bookshop.books
+        if self.__bookshop is None:
+            return []
+        return [book.to_dto() for book in self.__bookshop.books]
 
     def buy_book(self, book_index):
         book_index = int(book_index)

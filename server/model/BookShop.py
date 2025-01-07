@@ -12,13 +12,14 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from .Base import Base
 
+from modeldto.BookShop import BookShop as BookShopDto
 
 class BookShop(Base):
 
     __tablename__ = 'book_bookshop'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    books: Mapped[List['Book']] = relationship()
+    books: Mapped[List['Book']] = relationship(back_populates='bookshop')
     shop_name: Mapped[str] = mapped_column(String())
 
     def sell_book(self, book):
@@ -29,3 +30,7 @@ class BookShop(Base):
             if book.numeric:
                 return True
         return False
+
+    def to_dto(self):
+        result = BookShopDto(shop_name=self.shop_name, books=[book.to_dto() for book in self.books])
+        return result

@@ -1,5 +1,5 @@
 from handler import handle_request
-from model.Book import Book
+from modeldto.Book import Book
 import jsonpickle
 def add_book_in_bookshop():
     title = input("Titre: ")
